@@ -113,4 +113,3 @@ if __name__ == "__main__":
     }
     print("High-Risk Patient Inference:", json.dumps(predictor.predict_single(high_risk_sample), indent=2))
     print("Low-Risk Patient Inference:", json.dumps(predictor.predict_single(low_risk_sample), indent=2))
-
