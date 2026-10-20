@@ -1,5 +1,7 @@
 # Cardio-Risk End-to-End MLOps Pipeline
 **Course**: Machine Learning Operations (MLOps) — AIMLCZG523 (Assignment 01)  
+**Student ID**: 2025AE05407  
+**GitHub Repository**: [https://github.com/anandhasabesan89/2025AE05407_MLOps_AIMLZG523_Assigment1](https://github.com/anandhasabesan89/2025AE05407_MLOps_AIMLZG523_Assigment1)  
 **Problem Statement**: Predict patient heart disease risk from clinical attributes using the UCI Heart Disease Dataset and deploy the packaged pipeline as a containerized, Kubernetes-orchestrated, and Prometheus-monitored microservice.
 
 ---

@@ -10,6 +10,13 @@ on:
 permissions:
   contents: read
 
+env:
+  PYTHONPATH: ${{ github.workspace }}
+  MLFLOW_ALLOW_FILE_STORE: "true"
+  MLFLOW_DISABLE_AGENT_HINT: "1"
+  GIT_PYTHON_REFRESH: "quiet"
+  MPLBACKEND: "Agg"
+
 jobs:
   lint-and-unit-test:
     name: 1. Code Quality Linting & Unit Test Suite
@@ -34,8 +41,6 @@ jobs:
           python -m flake8 src/ scripts/ tests/ --count --statistics
 
       - name: Execute Pytest Unit & Integration Test Suite with Coverage
-        env:
-          PYTHONPATH: ${{ github.workspace }}
         run: |
           python -m pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
 
@@ -66,16 +71,15 @@ jobs:
 
       - name: Step 2a - Data Acquisition & Preprocessing
         run: |
-          python -m src.data.download_data
-          python -m src.data.preprocess
+          python scripts/01_eda_and_cleaning.py
 
-      - name: Step 2b - Generate Exploratory Data Analysis (EDA) Plots
+      - name: Step 2b - Model Training, CV Tuning, MLflow Tracking & Packaging
         run: |
-          python -m src.visualization.eda_plots
+          python scripts/02_feature_engineering_and_modeling.py
 
-      - name: Step 2c - Model Training, CV Tuning, MLflow Tracking & Packaging
+      - name: Step 2c - Standalone Packaged Pipeline Inference Check
         run: |
-          python -m src.models.train
+          python scripts/03_inference_and_verification.py
 
       - name: Upload Packaged Model, MLflow Runs & Diagnostic Plots
         uses: actions/upload-artifact@v4
@@ -86,8 +90,8 @@ jobs:
             reports/
             data/processed/
 
-  container-build-and-smoke-test:
-    name: 3. Docker Container Build & Isolated API Smoke Test
+  container-and-k8s-verification:
+    name: 3. Docker Container Build, API Smoke Test & Helm/K8s Validation
     needs: train-and-package-model
     runs-on: ubuntu-latest
     steps:
@@ -107,20 +111,42 @@ jobs:
       - name: Run Isolated Container & Verify /health, /predict, and /metrics
         run: |
           docker run -d --name cardio-api-test -p 8000:8000 cardio-risk-api:latest
-          sleep 5
+          for i in $(seq 1 20); do
+            if curl -fsS http://localhost:8000/health > health_response.json 2>/dev/null; then
+              echo "Container healthy on attempt $i:"
+              cat health_response.json
+              echo ""
+              break
+            fi
+            sleep 2
+          done
           curl -fsS http://localhost:8000/health
           echo ""
           curl -fsS -X POST http://localhost:8000/predict \
             -H "Content-Type: application/json" \
             -d '{"age":58,"sex":1,"cp":4,"trestbps":140,"chol":260,"fbs":0,"restecg":2,"thalach":135,"exang":1,"oldpeak":2.2,"slope":2,"ca":2,"thal":7}'
           echo ""
+          curl -fsS -X POST http://localhost:8000/predict \
+            -H "Content-Type: application/json" \
+            -d '{"age":41,"sex":0,"cp":2,"trestbps":118,"chol":195,"fbs":0,"restecg":0,"thalach":172,"exang":0,"oldpeak":0.0,"slope":1,"ca":0,"thal":3}'
+          echo ""
           curl -fsS http://localhost:8000/metrics -o metrics_output.txt
           head -n 25 metrics_output.txt
-          docker logs cardio-api-test > container_smoke_test.log
+          docker logs cardio-api-test > container_smoke_test.log 2>&1
+          cat container_smoke_test.log
           docker stop cardio-api-test
 
-      - name: Upload Container Smoke Test Logs
+      - name: Validate Helm Chart & Render Kubernetes Manifests
+        run: |
+          helm lint helm/heart-disease-api
+          helm template cardio-release helm/heart-disease-api > rendered_k8s_manifests.yaml
+          head -n 40 rendered_k8s_manifests.yaml
+
+      - name: Upload Container & Kubernetes Verification Logs
         uses: actions/upload-artifact@v4
         with:
-          name: container-verification-logs
-          path: container_smoke_test.log
+          name: container-and-k8s-verification-logs
+          path: |
+            container_smoke_test.log
+            metrics_output.txt
+            rendered_k8s_manifests.yaml

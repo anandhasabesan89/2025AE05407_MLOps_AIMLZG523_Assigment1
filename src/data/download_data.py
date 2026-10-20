@@ -86,18 +86,27 @@ def download_heart_disease_data(
     target_path.parent.mkdir(parents=True, exist_ok=True)
 
     logger.info("Fetching UCI Heart Disease dataset from: %s", target_url)
-    response = requests.get(target_url, timeout=30)
-    response.raise_for_status()
-
-    raw_lines = [
-        line.strip()
-        for line in response.text.strip().splitlines()
-        if line.strip()
-    ]
-    records = [line.split(",") for line in raw_lines]
-
-    df = pd.DataFrame(records, columns=col_names)
-    df.to_csv(target_path, index=False)
+    try:
+        response = requests.get(target_url, timeout=30)
+        response.raise_for_status()
+        raw_lines = [
+            line.strip()
+            for line in response.text.strip().splitlines()
+            if line.strip()
+        ]
+        records = [line.split(",") for line in raw_lines]
+        df = pd.DataFrame(records, columns=col_names)
+        df.to_csv(target_path, index=False)
+    except requests.RequestException as exc:
+        if target_path.exists():
+            logger.warning(
+                "Network request to UCI failed (%s); using cached raw dataset at %s",
+                exc,
+                target_path,
+            )
+            df = pd.read_csv(target_path)
+        else:
+            raise
 
     checksum = compute_sha256(target_path)
     logger.info(
