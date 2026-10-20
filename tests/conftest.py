@@ -1,16 +1,22 @@
 """Shared pytest fixtures for data, feature engineering, model, and API tests."""
 
 from pathlib import Path
+import sys
 from typing import Dict, Union
 
-import joblib
-import numpy as np
-import pandas as pd
-import pytest
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.features.build_features import REQUIRED_INPUT_FEATURES, build_preprocessing_pipeline
+import joblib  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+import pytest  # noqa: E402
+from sklearn.linear_model import LogisticRegression  # noqa: E402
+from sklearn.pipeline import Pipeline  # noqa: E402
+
+from src.features.build_features import (  # noqa: E402
+    REQUIRED_INPUT_FEATURES,
+    build_preprocessing_pipeline,
+)
 
 
 @pytest.fixture

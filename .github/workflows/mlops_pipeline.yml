@@ -31,11 +31,13 @@ jobs:
 
       - name: Run Flake8 Code Quality Linter
         run: |
-          flake8 src/ tests/ --count --statistics
+          python -m flake8 src/ scripts/ tests/ --count --statistics
 
       - name: Execute Pytest Unit & Integration Test Suite with Coverage
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
-          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+          python -m pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
 
       - name: Upload Test Coverage Report Artifact
         uses: actions/upload-artifact@v4
@@ -106,11 +108,14 @@ jobs:
         run: |
           docker run -d --name cardio-api-test -p 8000:8000 cardio-risk-api:latest
           sleep 5
-          curl -f http://localhost:8000/health
-          curl -f -X POST http://localhost:8000/predict \
+          curl -fsS http://localhost:8000/health
+          echo ""
+          curl -fsS -X POST http://localhost:8000/predict \
             -H "Content-Type: application/json" \
             -d '{"age":58,"sex":1,"cp":4,"trestbps":140,"chol":260,"fbs":0,"restecg":2,"thalach":135,"exang":1,"oldpeak":2.2,"slope":2,"ca":2,"thal":7}'
-          curl -f http://localhost:8000/metrics | head -n 25
+          echo ""
+          curl -fsS http://localhost:8000/metrics -o metrics_output.txt
+          head -n 25 metrics_output.txt
           docker logs cardio-api-test > container_smoke_test.log
           docker stop cardio-api-test
 
