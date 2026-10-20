@@ -15,8 +15,6 @@ from typing import Any, Dict, List
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -41,41 +39,28 @@ def _load_json(path: str) -> Dict[str, Any]:
     return {}
 
 
-def _set_cell_background(cell, fill_hex: str) -> None:
-    """Set background shading color on a python-docx table cell."""
-    tc_pr = cell._tc.get_or_add_tcPr()
-    shd = OxmlElement("w:shd")
-    shd.set(qn("w:val"), "clear")
-    shd.set(qn("w:color"), "auto")
-    shd.set(qn("w:fill"), fill_hex)
-    tc_pr.append(shd)
-
-
 def _add_styled_docx_table(doc: Document, headers: List[str], rows: List[List[str]]) -> None:
-    """Add a professionally formatted table with navy header and alternating row shading."""
+    """Add a formatted Word table using 100% native python-docx styles."""
     table = doc.add_table(rows=1, cols=len(headers))
     table.style = "Table Grid"
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
     hdr_cells = table.rows[0].cells
     for idx, text in enumerate(headers):
-        hdr_cells[idx].text = text
-        _set_cell_background(hdr_cells[idx], "1B365D")
-        for p in hdr_cells[idx].paragraphs:
-            for r in p.runs:
-                r.font.bold = True
-                r.font.size = Pt(9)
-                r.font.color.rgb = RGBColor(255, 255, 255)
+        hdr_cells[idx].text = ""
+        p = hdr_cells[idx].paragraphs[0]
+        run = p.add_run(str(text))
+        run.bold = True
+        run.font.size = Pt(9.5)
+        run.font.color.rgb = RGBColor(27, 54, 93)
 
-    for r_idx, row_vals in enumerate(rows):
+    for row_vals in rows:
         row_cells = table.add_row().cells
-        bg_hex = "F1F5F9" if r_idx % 2 == 1 else "FFFFFF"
         for c_idx, val in enumerate(row_vals):
-            row_cells[c_idx].text = str(val)
-            _set_cell_background(row_cells[c_idx], bg_hex)
-            for p in row_cells[c_idx].paragraphs:
-                for r in p.runs:
-                    r.font.size = Pt(8.5)
+            row_cells[c_idx].text = ""
+            p = row_cells[c_idx].paragraphs[0]
+            run = p.add_run(str(val))
+            run.font.size = Pt(9)
 
 
 def generate_pdf_report(
@@ -640,24 +625,39 @@ def generate_docx_report(
     win_metrics = meta.get("winning_metrics", {})
 
     doc = Document()
+    normal_style = doc.styles["Normal"]
+    normal_style.font.name = "Calibri"
+    normal_style.font.size = Pt(9.5)
+    normal_style.paragraph_format.space_before = Pt(1)
+    normal_style.paragraph_format.space_after = Pt(3)
+    normal_style.paragraph_format.line_spacing = 1.08
+
     for section in doc.sections:
-        section.top_margin = Inches(0.55)
-        section.bottom_margin = Inches(0.55)
-        section.left_margin = Inches(0.60)
-        section.right_margin = Inches(0.60)
+        section.top_margin = Inches(0.45)
+        section.bottom_margin = Inches(0.45)
+        section.left_margin = Inches(0.55)
+        section.right_margin = Inches(0.55)
 
     def add_heading_styled(text: str, level: int = 1):
         h = doc.add_heading(text, level=level)
+        h.paragraph_format.space_before = Pt(4)
+        h.paragraph_format.space_after = Pt(2)
         for run in h.runs:
             run.font.color.rgb = RGBColor(27, 54, 93)
+            run.font.size = Pt(12.5 if level == 1 else 10.5)
         return h
 
-    def add_pic_if_exists(path: str, width_in: float = 6.2):
+    def add_pic_if_exists(path: str, width_in: float = 5.4, height_in: float = None):
         p = Path(path)
         if p.exists():
-            doc.add_picture(str(p), width=Inches(width_in))
+            if height_in is not None:
+                doc.add_picture(str(p), width=Inches(width_in), height=Inches(height_in))
+            else:
+                doc.add_picture(str(p), width=Inches(width_in))
             last_p = doc.paragraphs[-1]
             last_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            last_p.paragraph_format.space_before = Pt(2)
+            last_p.paragraph_format.space_after = Pt(2)
 
     # ==================== PAGE 1 ====================
     t = doc.add_heading("Machine Learning Operations (MLOps) — AIMLCZG523 | Assignment 01", level=0)
