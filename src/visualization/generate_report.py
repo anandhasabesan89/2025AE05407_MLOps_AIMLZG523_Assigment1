@@ -207,8 +207,8 @@ def generate_pdf_report(
         ],
         [
             "9. Documentation (2m)",
-            "README.md, reports/, notebooks/",
-            "Reproducible notebooks, setup instructions, 10-page technical report",
+            "README.md, reports/, scripts/",
+            "Standalone Python scripts, setup guide, 10-page technical report",
         ],
     ]
     story.append(styled_table(rubric_rows, col_widths=[1.35 * inch, 2.25 * inch, 3.5 * inch]))
@@ -550,9 +550,9 @@ def generate_pdf_report(
             "data/processed/heart_disease_cleaned.csv, src/data/",
         ],
         [
-            "Jupyter Notebooks (EDA, Feature/Model Training, Inference)",
+            "Python Scripts (EDA, Feature/Model Training, Inference)",
             "Verified",
-            "notebooks/01..03_*.ipynb",
+            "scripts/01..03_*.py, src/",
         ],
         [
             "Unit & Integration Test Suite (Pytest) + GitHub Actions YAML",

@@ -57,14 +57,17 @@ MLOPs/
 ├── k8s/                            # Task 7: Kubernetes Deployment, Service & Ingress manifests
 ├── models/                         # Task 4: Serialized pipeline (.joblib) & model_metadata.json
 ├── monitoring/                     # Task 8: Prometheus config, Grafana dashboard & Docker Compose
-├── notebooks/                      # Deliverable: Reproducible Jupyter notebooks (EDA, Training, Inference)
 ├── reports/                        # Final 10-page written report (.docx & .pdf), JSON summaries & figures
 ├── screenshots/                    # Deliverable: Verification screenshots (EDA, MLflow, CI/CD, Docker, K8s)
+├── scripts/                        # Deliverable: Standalone Python execution scripts (EDA, Training, Inference)
+│   ├── 01_eda_and_cleaning.py
+│   ├── 02_feature_engineering_and_modeling.py
+│   └── 03_inference_and_verification.py
 ├── src/
 │   ├── data/                       # download_data.py & preprocess.py
 │   ├── features/                   # build_features.py (ClinicalFeatureEngineer + ColumnTransformer)
 │   ├── models/                     # train.py (CV + MLflow) & predict.py (HeartDiseasePredictor)
-│   ├── visualization/              # eda_plots.py & generate_notebooks.py
+│   ├── visualization/              # eda_plots.py, generate_architecture_and_screenshots.py, generate_report.py
 │   └── api/                        # schemas.py & app.py (FastAPI + Prometheus + Audit Logging)
 ├── tests/                          # Task 5: Unit & integration tests (pytest)
 ├── Dockerfile                      # Task 6: Production container definition

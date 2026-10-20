@@ -77,3 +77,40 @@ class HeartDiseasePredictor:
             "model_name": self.metadata.get("model_name", "PipelineClassifier"),
             "model_version": self.metadata.get("version", "1.0.0"),
         }
+
+
+if __name__ == "__main__":
+    predictor = HeartDiseasePredictor()
+    high_risk_sample = {
+        "age": 62,
+        "sex": 1,
+        "cp": 4,
+        "trestbps": 150,
+        "chol": 270,
+        "fbs": 0,
+        "restecg": 2,
+        "thalach": 120,
+        "exang": 1,
+        "oldpeak": 2.8,
+        "slope": 2,
+        "ca": 2,
+        "thal": 7,
+    }
+    low_risk_sample = {
+        "age": 41,
+        "sex": 0,
+        "cp": 2,
+        "trestbps": 118,
+        "chol": 195,
+        "fbs": 0,
+        "restecg": 0,
+        "thalach": 172,
+        "exang": 0,
+        "oldpeak": 0.0,
+        "slope": 1,
+        "ca": 0,
+        "thal": 3,
+    }
+    print("High-Risk Patient Inference:", json.dumps(predictor.predict_single(high_risk_sample), indent=2))
+    print("Low-Risk Patient Inference:", json.dumps(predictor.predict_single(low_risk_sample), indent=2))
+
