@@ -23,3 +23,10 @@ mlflow.db
 Thumbs.db
 .vscode/
 .idea/
+
+# Video recordings (>100 MB GitHub file limit)
+*.mp4
+*.mkv
+*.mov
+*.avi
+
