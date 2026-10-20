@@ -116,7 +116,7 @@ def generate_architecture_diagram(
         (45.3, 16.6, 55.2, 16.6),
         (68.3, 16.6, 69.7, 16.6),
         (82.2, 16.6, 83.2, 16.6),
-        (89.2, 38.2, 62.0, 20.0),
+        (75.0, 30.0, 75.0, 24.2),
     ]
     for x1, y1, x2, y2 in arrows:
         ax.annotate(
@@ -198,7 +198,7 @@ def render_mlflow_tracking_screenshot(
         meta: Dict[str, Any] = json.load(f)
 
     models_comp = meta.get("all_models_comparison", {})
-    fig, ax = plt.subplots(figsize=(14.5, 6.2))
+    fig, ax = plt.subplots(figsize=(15.5, 5.8))
     fig.patch.set_facecolor("#ffffff")
     ax.axis("off")
 
@@ -224,36 +224,38 @@ def render_mlflow_tracking_screenshot(
     columns = [
         "Run Name",
         "Run ID",
-        "CV ROC-AUC (±SD)",
-        "Test ROC-AUC",
+        "CV ROC-AUC",
+        "Test AUC",
         "Test Acc",
         "Precision",
         "Recall",
-        "F1-Score",
-        "Brier Loss",
-        "Best Hyperparameters",
+        "F1",
+        "Brier",
+        "Best Tuned Hyperparameters",
     ]
     cell_data = []
     for m_name, m_info in models_comp.items():
         params_str = ", ".join(f"{k}={v}" for k, v in m_info.get("best_params", {}).items())
         cell_data.append(
             [
-                f"{m_name}_Tuned_CV",
-                str(m_info.get("mlflow_run_id", ""))[:10],
-                f"{m_info['cv_roc_auc_mean']:.4f} (±{m_info['cv_roc_auc_std']:.4f})",
+                f"{m_name}_CV",
+                str(m_info.get("mlflow_run_id", ""))[:8],
+                f"{m_info['cv_roc_auc_mean']:.4f} ±{m_info['cv_roc_auc_std']:.3f}",
                 f"{m_info['test_roc_auc']:.4f}",
                 f"{m_info['test_accuracy']:.4f}",
                 f"{m_info['test_precision']:.4f}",
                 f"{m_info['test_recall']:.4f}",
                 f"{m_info['test_f1']:.4f}",
                 f"{m_info['test_brier_score']:.4f}",
-                params_str[:46] + ("..." if len(params_str) > 46 else ""),
+                params_str[:44] + ("..." if len(params_str) > 44 else ""),
             ]
         )
 
+    col_widths = [0.15, 0.07, 0.12, 0.07, 0.07, 0.07, 0.06, 0.06, 0.06, 0.27]
     table = ax.table(
         cellText=cell_data,
         colLabels=columns,
+        colWidths=col_widths,
         loc="center",
         cellLoc="center",
         bbox=[0.01, 0.15, 0.98, 0.65],

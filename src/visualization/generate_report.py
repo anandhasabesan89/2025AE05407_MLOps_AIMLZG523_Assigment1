@@ -575,7 +575,7 @@ def generate_pdf_report(
             "monitoring/, screenshots/",
         ],
     ]
-    story.append(styled_table(chk_rows, col_widths=[3.1 * inch, 0.9 * inch, 3.1 * inch]))
+    story.append(styled_table(chk_rows, col_widths=[3.45 * inch, 0.75 * inch, 2.9 * inch]))
 
     doc.build(story)
     return out_path
