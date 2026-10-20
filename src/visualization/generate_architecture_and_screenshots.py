@@ -369,7 +369,10 @@ def generate_all_verification_screenshots() -> None:
     )
     render_terminal_evidence_card(
         title="Task 7 — Production Kubernetes Deployment on Minikube (heart-mlops Cluster)",
-        subtitle="Cluster: heart-mlops (v1.29.2) | Replicas: 2/2 Ready | LoadBalancer Port: 80:30080/TCP | Ingress: nginx",
+        subtitle=(
+            "Cluster: heart-mlops (v1.29.2) | Replicas: 2/2 Ready | "
+            "LoadBalancer Port: 80:30080/TCP | Ingress: nginx"
+        ),
         terminal_text=k8s_text,
         output_path="screenshots/kubernetes_deployment_verification.png",
         accent_color="#4c2882",
@@ -399,7 +402,10 @@ def generate_all_verification_screenshots() -> None:
     )
     render_terminal_evidence_card(
         title="Task 8 — Prometheus Telemetry (/metrics) & Structured JSON Request Audit Logs",
-        subtitle="Endpoints: /metrics & /dashboard | Custom Counters: heart_api_predictions_total | Audit Log: PREDICTION_EVENT",
+        subtitle=(
+            "Endpoints: /metrics & /dashboard | Custom Counters: "
+            "heart_api_predictions_total | Audit Log: PREDICTION_EVENT"
+        ),
         terminal_text=prom_text,
         output_path="screenshots/prometheus_and_api_monitoring_dashboard.png",
         accent_color="#b45309",
