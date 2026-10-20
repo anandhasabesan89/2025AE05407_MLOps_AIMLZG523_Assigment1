@@ -1,0 +1,121 @@
+name: Cardio-Risk End-to-End MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-unit-test:
+    name: 1. Code Quality Linting & Unit Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Flake8 Code Quality Linter
+        run: |
+          flake8 src/ tests/ --count --statistics
+
+      - name: Execute Pytest Unit & Integration Test Suite with Coverage
+        run: |
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+
+      - name: Upload Test Coverage Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage-report
+          path: coverage.xml
+
+  train-and-package-model:
+    name: 2. Automated Data Pipeline, Model Training & MLflow Logging
+    needs: lint-and-unit-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Step 2a - Data Acquisition & Preprocessing
+        run: |
+          python -m src.data.download_data
+          python -m src.data.preprocess
+
+      - name: Step 2b - Generate Exploratory Data Analysis (EDA) Plots
+        run: |
+          python -m src.visualization.eda_plots
+
+      - name: Step 2c - Model Training, CV Tuning, MLflow Tracking & Packaging
+        run: |
+          python -m src.models.train
+
+      - name: Upload Packaged Model, MLflow Runs & Diagnostic Plots
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-model-and-reports
+          path: |
+            models/
+            reports/
+            data/processed/
+
+  container-build-and-smoke-test:
+    name: 3. Docker Container Build & Isolated API Smoke Test
+    needs: train-and-package-model
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Packaged Model Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: packaged-model-and-reports
+          path: .
+
+      - name: Build Production Docker Image
+        run: |
+          docker build -t cardio-risk-api:${{ github.sha }} -t cardio-risk-api:latest .
+
+      - name: Run Isolated Container & Verify /health, /predict, and /metrics
+        run: |
+          docker run -d --name cardio-api-test -p 8000:8000 cardio-risk-api:latest
+          sleep 5
+          curl -f http://localhost:8000/health
+          curl -f -X POST http://localhost:8000/predict \
+            -H "Content-Type: application/json" \
+            -d '{"age":58,"sex":1,"cp":4,"trestbps":140,"chol":260,"fbs":0,"restecg":2,"thalach":135,"exang":1,"oldpeak":2.2,"slope":2,"ca":2,"thal":7}'
+          curl -f http://localhost:8000/metrics | head -n 25
+          docker logs cardio-api-test > container_smoke_test.log
+          docker stop cardio-api-test
+
+      - name: Upload Container Smoke Test Logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-verification-logs
+          path: container_smoke_test.log

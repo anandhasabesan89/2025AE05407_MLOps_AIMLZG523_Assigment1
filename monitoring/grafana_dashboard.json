@@ -1,0 +1,57 @@
+{
+  "title": "Cardio-Risk MLOps Production Monitoring Dashboard",
+  "uid": "cardio-risk-mlops-v1",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total HTTP Requests Rate (req/sec)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(heart_api_http_requests_total[1m])",
+          "legendFormat": "{{method}} {{endpoint}} ({{http_status}})"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "95th Percentile Inference Latency (seconds)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(heart_api_request_latency_seconds_bucket[5m]))",
+          "legendFormat": "p95 {{endpoint}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Clinical Predictions by Diagnosis & Risk Tier",
+      "type": "barchart",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "heart_api_predictions_total",
+          "legendFormat": "{{prediction_label}} ({{risk_tier}})"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Model Confidence Score Distribution",
+      "type": "heatmap",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(heart_api_prediction_confidence_bucket[5m])",
+          "legendFormat": "{{le}}"
+        }
+      ]
+    }
+  ]
+}

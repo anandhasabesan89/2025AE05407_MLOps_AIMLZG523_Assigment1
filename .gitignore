@@ -1,0 +1,25 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python cache & build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# MLflow local tracking store (runs logged during local dev; summary exported to reports)
+mlruns/
+mlartifacts/
+mlflow.db
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

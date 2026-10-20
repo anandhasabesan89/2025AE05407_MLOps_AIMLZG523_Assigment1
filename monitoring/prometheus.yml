@@ -1,0 +1,14 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: "cardio-risk-fastapi"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets:
+          - "cardio-risk-api:8000"
+          - "host.docker.internal:8000"
+        labels:
+          service: "cardio-risk-inference-api"
+          environment: "production"

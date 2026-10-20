@@ -1,0 +1,32 @@
+replicaCount: 2
+
+image:
+  repository: cardio-risk-api
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+  nodePort: 30080
+
+ingress:
+  enabled: true
+  className: nginx
+  host: cardio-risk.local
+  path: /
+  pathType: Prefix
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+prometheus:
+  scrape: true
+  path: /metrics
+  port: 8000

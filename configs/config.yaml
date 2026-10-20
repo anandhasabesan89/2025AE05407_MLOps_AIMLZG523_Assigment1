@@ -1,0 +1,58 @@
+project:
+  name: "cardio-risk-mlops"
+  version: "1.0.0"
+  random_state: 42
+
+data:
+  uci_url: "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+  raw_path: "data/raw/heart_disease_raw.csv"
+  processed_path: "data/processed/heart_disease_cleaned.csv"
+  quality_report_path: "reports/data_quality_summary.json"
+  test_size: 0.20
+  columns:
+    - age
+    - sex
+    - cp
+    - trestbps
+    - chol
+    - fbs
+    - restecg
+    - thalach
+    - exang
+    - oldpeak
+    - slope
+    - ca
+    - thal
+    - num
+
+features:
+  target_col: "target"
+  numeric_features:
+    - age
+    - trestbps
+    - chol
+    - thalach
+    - oldpeak
+  categorical_features:
+    - sex
+    - cp
+    - fbs
+    - restecg
+    - exang
+    - slope
+    - ca
+    - thal
+  engineered_numeric_features:
+    - hr_reserve_ratio
+    - rate_pressure_product
+    - chol_age_ratio
+    - st_depression_per_hr
+
+model:
+  cv_folds: 5
+  scoring: "roc_auc"
+  mlflow_tracking_uri: "mlruns"
+  mlflow_experiment_name: "Heart_Disease_Risk_Classification"
+  artifact_dir: "models"
+  pipeline_filename: "heart_disease_pipeline.joblib"
+  metadata_filename: "model_metadata.json"

@@ -1,0 +1,33 @@
+{
+  "initial_row_count": 303,
+  "final_row_count": 303,
+  "feature_count": 13,
+  "duplicates_removed": 0,
+  "total_missing_values_handled": 6,
+  "missing_by_column_before": {
+    "age": 0,
+    "sex": 0,
+    "cp": 0,
+    "trestbps": 0,
+    "chol": 0,
+    "fbs": 0,
+    "restecg": 0,
+    "thalach": 0,
+    "exang": 0,
+    "oldpeak": 0,
+    "slope": 0,
+    "ca": 4,
+    "thal": 2,
+    "num": 0
+  },
+  "imputation_values_applied": {
+    "ca": 0.0,
+    "thal": 3.0
+  },
+  "missing_after_cleaning": 0,
+  "target_distribution": {
+    "0_no_disease": 164,
+    "1_heart_disease": 139,
+    "positive_rate": 0.4587
+  }
+}
